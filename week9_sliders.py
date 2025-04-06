@@ -70,6 +70,24 @@ def transform_features(raw):
     """
     # TODO
 
+    norm_duration = (raw['Accident_Duration'] - 567.1701696545312) / 14985.77043039099 # subtracted by mean and divided by sd
+    hour_rad = 2 * np.pi * raw['Start_Hour'] / 24
+    month_rad = 2 * np.pi * raw['Start_Month'] / 12
+
+
+    transformed = {
+        'Accident_Duration': norm_duration,
+        'Start_Month_Sin': np.sin(month_rad),
+        'Start_Month_Cos': np.cos(month_rad),
+        'Start_Hour_Sin': np.sin(hour_rad),
+        'Start_Hour_Cos': np.cos(hour_rad),
+        'Distance(mi)': raw['Distance(mi)'],
+        'Highway_Flag': raw['Highway_Flag'],
+        'Crossing_Flag': raw['Crossing_Flag'],
+        'Traffic_Signal_Flag': raw['Traffic_Signal_Flag'],
+    }
+    return transformed
+
 
 def predict_severity():
     # Transform the features to the format expected by the model
@@ -89,6 +107,12 @@ ax.set_extent([-125, -65, 24, 50], crs=ccrs.PlateCarree())
 """
 Copy and paste the map styling code from your previous example here
 """
+ax.add_feature(cfeature.BORDERS, linewidth=0.5, edgecolor='black')
+ax.add_feature(cfeature.LAND, linewidth=0.5, edgecolor='black', facecolor='lightgray')
+ax.add_feature(cfeature.OCEAN, linewidth=0.5, edgecolor='black', facecolor='lightblue')
+ax.add_feature(cfeature.LAKES, linewidth=0.5, edgecolor='black', facecolor='lightblue')
+ax.add_feature(cfeature.COASTLINE, linewidth=0.5, edgecolor='black')
+ax.add_feature(cfeature.STATES, linewidth=0.3, edgecolor='black', facecolor='lightgray')
 
 # Initial title
 ax.set_title("Click on a location to predict severity", fontsize=14, pad=20)
@@ -115,19 +139,19 @@ for i, name in enumerate(slider_names):
     ax_slider = plt.axes([0.15, 0.02 + i*0.03, 0.65, 0.02])
 
     if 'Flag' in name:
-        slider = #TODO Allow binary values for flags (0 or 1)
+        slider = Slider(ax_slider, name, 0, 1, valinit=features[name], valstep=1)
 
     elif name == 'Start_Hour':
-        slider = #TODO Allow hour from 0 to 23
+        slider = Slider(ax_slider, name, 0, 23, valinit=features[name], valstep=1)
 
     elif name == 'Start_Month':
-        slider = #TODO Allow month from 1 to 12
+        slider = Slider(ax_slider, name, 1, 12, valinit=features[name], valstep=1)
 
     elif name == 'Distance(mi)':
-        slider = #TODO Allow distance from 1.0 to 10 
+        slider = Slider(ax_slider, name, 1.0, 10.0, valinit=features[name], valstep=0.1)
 
     elif name == 'Accident_Duration':
-        slider = #TODO Allow duration from 0 to 180 minutes
+        slider = Slider(ax_slider, name, 0, 180, valinit=features[name], valstep=1)
 
     else:
         slider = Slider(ax_slider, name, -1, 1, valinit=features[name])
